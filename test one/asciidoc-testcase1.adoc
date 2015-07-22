@@ -10,3 +10,5 @@ A preface about http://asciidoc.org[AsciiDoc].
 
 [source,ruby]
 puts "Hello, World!"
+
+image::ReliabilityGraph.png[Dependability]
