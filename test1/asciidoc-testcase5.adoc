@@ -1,5 +1,5 @@
 = Another Introduction to AsciiDoc
-Doc Writer <doc@example.com>
+Doc Writer <doc@example.dk>
 
 A preface about http://asciidoc.org[AsciiDoc].
 
