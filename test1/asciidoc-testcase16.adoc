@@ -1,4 +1,4 @@
-= The Brothers Karamazov
+= The Brothers Karamazov2
 :author: Fyodor Dostoyevsky
 :encoding: iso-8859-1
 :plaintext:
