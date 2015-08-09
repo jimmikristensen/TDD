@@ -1,4 +1,4 @@
-= Another Introduction to AsciiDoc
+= Another Introduction to AsciiDocc
 Doc Writer <doc@example.dk>
 
 A preface about http://asciidoc.org[AsciiDoc].
