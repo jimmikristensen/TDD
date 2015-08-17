@@ -2,6 +2,7 @@
 :backend: deckjs
 :deckjs_transition: fade
 :deckjs_theme: web-2.0
+:source-highlighter: prettify
 :menu:
 :customcss: custom.css
 
@@ -126,7 +127,40 @@ Not all tests are equalliy important for reliability, so, the testing "budget" s
 
 === We use testing to help ensure reliability.
 
-== Basic principles
+
+== But first some clerification
+
+[options="step"]
+*What is Review?*
+
+[options="step"]
+* Review of code, requirement specificaiton, system design, system architecture
+** Defects can occur in all of the above
+
+[options="step"]
+*What is Unit Testing?*
+
+[options="step"]
+* Is an automated black-box testing technique with the goal of revealing defects in individual software units
+** In my opinion, a software unit is a single class
+
+[options="step"]
+*What is Integration Testing?*
+
+[options="step"]
+* Is an automated black-box testing technique in which individual units are combined and tested as a group
+** We integrate one unit into the group at a time
+** *Methods* Big Bang, Top-down, Bottom-up
+
+[options="step"]
+*What is System Testing?*
+
+[options="step"]
+* Are tests conducted on a complete, integrated system to evaluate the system's compliance with its specified requirements
+** Some types are:
+*** _Usability testing_, _Performance testing_, _Stress testing_ (Over normal operation), _Load testing_ (Within normal operation), _Regression testing_, _Recovery testing_, _Scalability testing_, _Security testing_, _Smoke testing_, etc.
+
+== Basic Principles of Testing
 
 [options="step"]
 * Testing is an execution based process with the intent of a) reveal defects b) evaluate quality
@@ -188,12 +222,12 @@ Instead of thinking *_I will prove my software works_* think like this indtead *
 
 TDD replaces _tacit knowledge_ with a formulated process
 
-* The rhythm
+* The TDD rhythm
 ** *five steps* that are each highly focussed and fast-paced iteration
 * Testing principles
 ** The *testing principles* that defines a term for a specific action to make in each step
 
-== The Rhythm
+== The TDD Rhythm
 
 * Add a small test
 * Run all tests and see the new one fail
@@ -327,8 +361,8 @@ Will these 5 test cases ensure a reliable implementation?
 |x = 39
 |39
 
-|x = 39
-|39
+|x = 40
+|40
 |===
 
 === Is the input representative?
@@ -356,7 +390,7 @@ image::ec1.png[EC]
 == Good rules to remember when creating tests
 
 * *Coverage:* Every possible input element belongs to at least one of the equivalence classes
-* *Representation:* If a defect is demonstrated on a particular member of an equivalence classes, the same defect is assumed to be demonstrated by any pther member of the class
+* *Representation:* If a defect is demonstrated on a particular member of an equivalence classes, the same defect is assumed to be demonstrated by any other member of the class
 
 === Some input values will make an algorithm give up, or crash your system
 
@@ -376,9 +410,9 @@ Sqrt(0), file.open("nonexistingfile"), division(0), exceptions, etc.
 Experience shows that test cases focusing on boundary conditions have high payoff
 
 * Some that spring into my mind is
-** iteration over a C array at its max size
+** iteration over an array at its max size
 ** ”off by one” errors in comparisons 
-*** if ( x <= MAX_SIZE ) and not if ( x < MAX_SIZE ) 
+*** if ( x < = MAX_SIZE ) and not if ( x < MAX_SIZE ) 
 ** null as value for a reference/pointer
 
 *Definition:* A boundry value is an element that lies right on or next to the edge of an equivalance class
@@ -407,10 +441,10 @@ image::driver.png[Driver]
 * Why use them?
 ** Slow tests
 ** DOU is:
-*** not available (not developed yet)
-*** not under test control
-*** has side-effects
-*** can throw exceptions which are otherwise hard to provoke
+*** *not available* (not developed yet)
+*** *not under test control* (basically all integration points, e.g. Databases, REST APIs, etc.)
+*** *has side-effects* (contaminates database, sets off an alarm, etc.)
+*** *can throw exceptions which are otherwise hard to provoke*
 
 == Classification
 
@@ -418,21 +452,80 @@ image::testdoubles.png[TestDoubles]
 
 == Test Stubs
 
-image::teststub.png[TestStubs]
+How can we verify logic independently when it depends on indirect inputs from other software components?
+
+*We replace a real object with a test-specific object that feeds the desired indirect inputs into the system under test in order to have control of the DOU return data.*
+
+[options="step"]
+image::teststub2.png[TestStubs]
+
+[options="step"]
+* *Focus on indirect input*
+* *When to use Test Stubs?*
+** When the DOU is not developed yet (Often used in TDD in order to keep focus)
+** When the DOU is not under test control (E.g. integration points like REST APIs and Databases.)
+** When we want to test how the UUT reacts to specific return data from the DOU (E.g. clocks, temperatures, alarms, etc.)
+** When we want to test how the UUT reacts to different exceptions thrown by the DOU
+* These are all examples of indirect input to the UUT
 
 == Test Spy
 
-image::testspy.png[TestSpys]
+How do we implement Behavior Verification?
+
+How can we verify logic independently when it has indirect outputs to other software components?
+
+*Use a Test Double to capture the indirect output calls made to another component by the unit under test (UUT) for later verification by the test.*
+
+[options="step"]
+image::testspy2.png[TestSpys]
+
+[options="step"]
+* *Focus on indirect output*
+* *When to use Test Spy?*
+** When we want to record/log how the UUT interacts with the DOU
+** When we want to verify that the UUT makes the correct calls in the right order to the DOU
+** When we don't think a Mock Object is sufficiently intent-revealing, or we simply don't have a mock framework available
+* *This allows us to do behaviour verificaiton in our test driver*
 
 == Fake Object
 
-image::fakeobject.png[FakeObj]
+How can we verify logic independently when depended-on objects cannot be used?
+
+How can we avoid Slow Tests?
+
+*Replace a component that the unit under test (UUT) depends on with a much lighter-weight implementation.*
+
+[options="step"]
+image::fakeobject2.png[FakeObj]
+
+[options="step"]
+* *Implements light-weight semi-realistic behaviour*
+* *When to use Fake Objects?*
+** When the UUT depends on other components which makes testing difficult or slow
+** When the tests need complex sequences of behavior than is worth implementing in a Test Stub or Mock Object
+** If we need to control either the indirect inputs or indirect outputs of the UUT, we should probably be using a Mock Object or Test Stub instead
+* *Some specific situations where we replace the real component with a Fake Object are:*
+** Fake Database, In-Memory Database (e.g. H2), Fake Web Service,  Fake Service Layer
 
 == Mock Object
 
-image::mockobject.png[MockObj]
+How do we implement Behavior Verification for indirect outputs of the UUT?
 
-== Summary
+How can we verify logic independently when it depends on indirect inputs from other software components?
+
+*Replace an object the unit under test (UUT) depends on with a test-specific object that verifies it is being used correctly by the UUT.*
+
+[options="step"]
+image::mockobject2.png[MockObj]
+
+[options="step"]
+* *Focus on indirect output*
+* *When to use Mock Objects?*
+** We can use a Mock Object as an observation point when we need to do Behavior Verification (Much like a Spy, but where verification is specified in the Mock Object)
+** When we want to verify that the UUT makes the correct calls in the right order and with the correct parametrs to the DOU
+* *Often Mock frameworks use Mock Objects to test on indirect input, in this case the Mock is actually behaving like a Test Stub rather than a Mock Object*
+
+== Test Doubles Summary
 
 * Testing units in isolation is important
 ** unit and integration testing
@@ -440,16 +533,97 @@ image::mockobject.png[MockObj]
 
 * Units have more inputs and outputs than visible from the parameter list and instances variables
 ** especially true in object-oriented programming
-** indirect inputs: data from DOUs
-** indirect output: data to DOUs
+** indirect inputs: data from DOUs to the UUT
+** indirect output: data to DOUs from the UUT
 
 *Test Doubles* allow you to get access to, inspect, and verify indirect input and output
 
 * *Stub:* focus on indirect input
 * *Spy:*  focus on indirect output (record/verify)
+* *Fake object:* light-weight semi-realistic behaviour
 * *Mock:* focus on indirect output (fail fast)
 ** frameworks to generate doubles dynamically
-* *Fake object:* light-weight semi-realistic behaviour
+
+== Conclusion
+
+In order to make your software more flexible and reliable
+
+* Make the TDD rythm and TDD principle a part of your development life-cycle
+* Make use of both white-box and black-box testing
+* Make sure your test data is representative by thinking in equivalance classes
+* Make sure to test data boundries
+* *Test both valid and invalid equivalance classes*, _do not only test the happy path_
+* Make use of test doubles in order to test software units in isolation
+* And finally...
+
+=== Testing shows the presence, not the absence of bugs
+
+* Some resources:
+** _Test doubles_ http://xunitpatterns.com/Test%20Double%20Patterns.html
+** _Martin Fowler_ http://martinfowler.com/articles/mocksArentStubs.html
+** _Spock Github_ https://github.com/spockframework/spock
+** _Spock Wikis_  https://code.google.com/p/spock/w/list
+** _Spock Handbook_ https://leanpub.com/spockframeworknotebook/read
+
+== Mockito vs. Spock
+
+[source,java]
+----
+@Test
+public void shouldFetchWeatherForecastFromGlobalServiceIfNotAvailableLocally() {
+    WeatherService localWeatherService = Mockito.mock(WeatherService.class); // <1>
+    WeatherService globalWeatherService = Mockito.mock(WeatherService.class);
+
+    WeatherForecast forecast = new WeatherForecast(globalWeatherService, localWeatherService); // <2>
+
+    Mockito.when(localWeatherService.hasForecastFor(anyString())) // <3>
+           .thenReturn(false);
+
+    Weather forecastedWeather = new Weather();
+
+    Mockito.when(globalWeatherService.getWeather(anyString()))
+           .thenReturn(forecastedWeather);
+    
+    Weather weather = forecast.getForecast("myCity");
+
+    verify(localWeatherService, times(1)).hasForecastFor(anyString())); // <4>
+    verify(globalWeatherService, times(1)).getWeather(anyString());
+
+    assertThat(weather).isSameAs(forecastedWeather); // <5>
+}
+----
+<1> Setup mocks
+<2> UUT
+<3> Setup rules for the mock
+<4> Verify invocations and parameters 
+<5> Assertion
+
+== continued
+
+[source,java]
+----
+void "Should fetch weather forecast from global service if not available locally"() {
+    given:
+    WeatherService localWeatherService = Mock(WeatherService) // <1>
+    WeatherService globalWeatherService = Mock(WeatherService)
+    def forecast = new WeatherForecast(globalWeatherService, localWeatherService) // <2>
+    def forecastedWeather = new Weather()
+
+    when:
+    Weather weather = forecast.getForecast("myCity")
+
+    then:
+    1 * localWeatherService.hasForecastFor(_ as String) >> false // <3>
+    1 * globalWeatherService.getWeather(_ as String) >> forecastedWeather
+
+    and:
+    weather == forecastedWeather // <4>
+}
+----
+<1> Setup mocks
+<2> UUT
+<3> Setup rules and verify invocations and parameters 
+<4> Assertion
 
 == The Spock Testing Framework
 
